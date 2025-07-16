@@ -26,7 +26,7 @@ const planetData = [
     { name: "Neptune", color: 0x3333ff, size: 2, distance: 56, orbitSpeed: 0.002, rotationSpeed: 0.028, texture: './textures/neptune.png' }
 ];
 
-// ✅ Initialization
+//  Initialization
 function initScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
@@ -53,7 +53,6 @@ function initScene() {
     window.addEventListener('mousemove', onMouseMove);
 }
 
-// ✅ Lights
 function createLights() {
     const pointLight = new THREE.PointLight(0xffffff, 1000, 3000);
     pointLight.position.set(0, 0, 0);
@@ -63,7 +62,6 @@ function createLights() {
     scene.add(ambientLight);
 }
 
-// ✅ Controls
 function createOrbitControls() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -72,7 +70,6 @@ function createOrbitControls() {
     controls.enableZoom = true;
 }
 
-// ✅ Sun (GLB)
 async function createSun() {
     try {
         sun = await getSun();
@@ -85,7 +82,6 @@ async function createSun() {
     }
 }
 
-// ✅ Planets + Moon + Rings
 function createPlanets() {
     const tiltMap = {
         Mercury: 0.03, Venus: 177.4, Earth: 23.5, Mars: 25.2,
@@ -102,12 +98,11 @@ function createPlanets() {
         });
 
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.name = p.name; // ✅ Tooltip name
+        mesh.name = p.name; //  Tooltip name
         mesh.rotation.z = THREE.MathUtils.degToRad(tiltMap[p.name]);
         const rotationDir = (p.name === "Venus" || p.name === "Uranus") ? -1 : 1;
         scene.add(mesh);
 
-        // Orbit Ring
         const orbit = new THREE.Mesh(
             new THREE.RingGeometry(p.distance - 0.05, p.distance + 0.05, 64),
             new THREE.MeshBasicMaterial({ color: 0x888888, side: THREE.DoubleSide })
@@ -130,14 +125,11 @@ function createPlanets() {
 
         planets.push(planetObj);
     });
-
-    // Attach Moon after Earth mesh is in scene
     planets.forEach(p => {
         if (p.moon) p.mesh.add(p.moon.mesh);
     });
 }
 
-// ✅ Saturn Ring (Points Version)
 function createSaturnRing(planetSize) {
     const positions = [];
     const count = 2500;
@@ -167,7 +159,6 @@ function createSaturnRing(planetSize) {
     return ring;
 }
 
-// ✅ Moon
 function createMoon() {
     const moonMesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.27, 32, 32),
@@ -179,7 +170,6 @@ function createMoon() {
     return { mesh: moonMesh, angle: 0, orbitSpeed: 0.04, distance: 2 };
 }
 
-// ✅ Tooltip
 function createTooltip() {
     tooltip = document.createElement("div");
     Object.assign(tooltip.style, {
@@ -190,7 +180,6 @@ function createTooltip() {
     document.body.appendChild(tooltip);
 }
 
-// ✅ UI with Styling
 function createUI() {
     const controlsDiv = document.getElementById("controls");
     Object.assign(controlsDiv.style, {
@@ -278,7 +267,6 @@ function toggleTextures() {
     });
 }
 
-// ✅ Events
 function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -299,8 +287,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// ✅ Animation
-function animate() {
+function animate(t = 0) {
     requestAnimationFrame(animate);
 
     if (!paused) {
@@ -317,13 +304,15 @@ function animate() {
             }
         });
 
-        if (sun) sun.rotation.y += 0.001;
+        if (sun) {
+            sun.rotation.y += 0.001;
+            sun.userData.update(t * 0.001);
+        }
     }
 
     controls.update();
     renderer.render(scene, camera);
 }
 
-// ✅ Start
 initScene();
 animate();
